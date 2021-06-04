@@ -6,7 +6,7 @@ import {AngularYandexMapsModule, YaConfig} from 'angular8-yandex-maps';
 import {FormsModule} from '@angular/forms';
 
 const mapConfig: YaConfig = {
-  apikey: null,
+  apikey: '1fcd605d-9dde-4bf2-92be-540cc8637956',
   lang: 'ru_RU',
 };
 
