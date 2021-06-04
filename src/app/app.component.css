@@ -1,0 +1,53 @@
+
+.map {
+  position: relative;
+  height: 400px;
+}
+
+.marker {
+  background-position: center;
+  background-repeat: no-repeat;
+  position: absolute;
+  /*url of the marker*/
+  background-image: url("src/assets/img/pointer.png");
+  /*center the marker*/
+  top: 50%;
+  left: 50%;
+  z-index: 999;
+  /*fix offset when needed*/
+  margin-left: -39px;
+  margin-top: -37px;
+  /*size of the image*/
+  height: 50px;
+  width: 50px;
+  background-size: 22px 33px;
+  cursor: pointer;
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none; /* Old versions of Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none;
+}
+
+.address {
+  width: 80%;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
