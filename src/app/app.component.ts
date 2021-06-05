@@ -1,7 +1,7 @@
-import {Component, OnInit} from '@angular/core';
 
-import {YaEvent, YaReadyEvent, YaApiLoaderService} from 'angular8-yandex-maps';
+import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 
+import {YaEvent, YaReadyEvent, YaApiLoaderService, YaGeocoderService} from 'angular8-yandex-maps';
 
 
 @Component({
@@ -11,32 +11,77 @@ import {YaEvent, YaReadyEvent, YaApiLoaderService} from 'angular8-yandex-maps';
 })
 export class AppComponent implements OnInit {
 
+  constructor(private yaApiLoaderService: YaApiLoaderService,
+              private yaGeocoderService: YaGeocoderService) {
+    // this.yaApiLoaderService.load()
+    //   .subscribe(v => console.log(v));
+
+    // this.yaGeocoderService.geocode('Таджикистан, Душанбе, проспект Негмата Карабаева, 11')
+    //     .subscribe(v => console.log(v));
+  }
+
   map: ymaps.Map;
   point: number[];
   center: number[] = [38.573949, 68.785895];
   addressLine;
+  private bounds: number[][] = [[38.464454, 68.671434], [38.708910, 68.889581]];
 
-  suggest: any;
+  public mapState = {
+    controls: [
+      'zoomControl',
+      'geolocationControl'
+    ]
+  };
 
-  constructor(private yaApiLoaderService: YaApiLoaderService) {
-    // this.yaApiLoaderService.load()
-    //   .subscribe(v => console.log(v));
-  }
+  public feature: ymaps.IGeoObjectFeature = {
+    geometry: {
+      type: 'Rectangle',
+      coordinates: [[38.464454, 68.671434], [38.708910, 68.889581]]
+    },
+    properties: {
+      hintContent: 'Hint Content',
+      balloonContent: 'Baloon Content'
+    }
+  };
+
+  public options: ymaps.IGeoObjectOptions = {
+    fillColor: '#7df9ff33',
+    fillOpacity: 0.5,
+    strokeColor: '#0000FF',
+    strokeOpacity: 0.5,
+    strokeWidth: 2,
+    borderRadius: 6
+  };
 
   ngOnInit(): void {}
 
-  onSearchChange(searchValue: string): void {
+  showOnMap(inputAddress: string): any {
+    this.addressLine = inputAddress;
+    ymaps.geocode(this.addressLine).then((location) => {
+      const firstGeoObject = (location as any).geoObjects.get(0);
+      this.bounds = firstGeoObject.properties.get('boundedBy');
+      // Adding first found geo object to the map.
+      this.map.geoObjects.add(firstGeoObject);
+      this.map.setBounds(this.bounds, {
+        checkZoomRange: true
+      }).then();
+    });
+  }
+
+  onSearchChange(): void {
     this.yaApiLoaderService.load().subscribe(ymaps => {
       const suggest = new (ymaps as any).SuggestView('suggest');
-      suggest.events.add(['select'], e => console.log(e));
+      suggest.events.add(['click']);
+
+
+      // suggest.events.add(['select'], e => console.log(e));
+      // console.log(suggest);
     });
-   // console.log(searchValue);
   }
 
 
   onYaActionEnd($event: YaEvent<ymaps.Map>): void {
     this.point = $event.event.originalEvent.target.getCenter();
-    console.log(this.point);
     $event.ymaps.geocode(this.point).then((res: any) => {
       const firstGeoObject = res.geoObjects.get(0);
       this.addressLine = firstGeoObject.properties.get('name');

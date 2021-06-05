@@ -3,11 +3,13 @@
     <button  class="btn btn-light border border-warning" (click)="onDetectLocationClick()">Определить</button>
   </div>
   <div class="col-8 ">
-    <input type="text" id="suggest" class="address form-control" (input)="onSearchChange($event.target.value)" value="{{addressLine}}" >
-
+    <input
+      type="text" id="suggest" class="address form-control ymaps-2-1-78-search__suggest"
+      (focus)="onSearchChange()"  value="{{addressLine}}" #inputAddress>
+<!--      [(ngModel)]="inputAddress">-->
   </div>
   <div class="col-2">
-  <button class="btn btn-warning">OK</button>
+  <button class="btn btn-warning" (click)="showOnMap(inputAddress.value)">OK</button>
   </div>
 </div>
 
@@ -15,11 +17,19 @@
   <div class="col-12 mt-1 map">
     <ya-map [center]="center"
             (ready)="onMapReady($event)"
-            (actionend)="onYaActionEnd($event)">
+            (actionend)="onYaActionEnd($event)"
+            [state]="mapState">
+      <ya-geoobject
+        [feature]="feature"
+        [options]="options"
+      ></ya-geoobject>
     </ya-map>
     <div class="marker"></div>
   </div>
 </div>
+<p><i>
+  Currently: {{inputAddress}}
+</i></p>
 
 
 
