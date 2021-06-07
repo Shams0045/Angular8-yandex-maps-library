@@ -1,8 +1,7 @@
 
-import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 
-import {YaEvent, YaReadyEvent, YaApiLoaderService, YaGeocoderService} from 'angular8-yandex-maps';
-
+import {YaEvent, YaReadyEvent, YaApiLoaderService} from 'angular8-yandex-maps';
 
 @Component({
   selector: 'app-root',
@@ -11,20 +10,12 @@ import {YaEvent, YaReadyEvent, YaApiLoaderService, YaGeocoderService} from 'angu
 })
 export class AppComponent implements OnInit {
 
-  constructor(private yaApiLoaderService: YaApiLoaderService,
-              private yaGeocoderService: YaGeocoderService) {
-    // this.yaApiLoaderService.load()
-    //   .subscribe(v => console.log(v));
-
-    // this.yaGeocoderService.geocode('Таджикистан, Душанбе, проспект Негмата Карабаева, 11')
-    //     .subscribe(v => console.log(v));
-  }
-
   map: ymaps.Map;
   point: number[];
   center: number[] = [38.573949, 68.785895];
-  addressLine;
+  addressLine: string;
   private bounds: number[][] = [[38.464454, 68.671434], [38.708910, 68.889581]];
+  pointer: number[];
 
   public mapState = {
     controls: [
@@ -33,32 +24,19 @@ export class AppComponent implements OnInit {
     ]
   };
 
-  public feature: ymaps.IGeoObjectFeature = {
-    geometry: {
-      type: 'Rectangle',
-      coordinates: [[38.464454, 68.671434], [38.708910, 68.889581]]
-    },
-    properties: {
-      hintContent: 'Hint Content',
-      balloonContent: 'Baloon Content'
-    }
-  };
-
-  public options: ymaps.IGeoObjectOptions = {
-    fillColor: '#7df9ff33',
-    fillOpacity: 0.5,
-    strokeColor: '#0000FF',
-    strokeOpacity: 0.5,
-    strokeWidth: 2,
-    borderRadius: 6
-  };
+  constructor(private yaApiLoaderService: YaApiLoaderService) {}
 
   ngOnInit(): void {}
+
+  onMapReady($event: YaReadyEvent<ymaps.Map>): void {
+    this.map = $event.target;
+  }
 
   showOnMap(inputAddress: string): any {
     this.addressLine = inputAddress;
     ymaps.geocode(this.addressLine).then((location) => {
       const firstGeoObject = (location as any).geoObjects.get(0);
+      this.pointer = firstGeoObject.geometry._coordinates;
       this.bounds = firstGeoObject.properties.get('boundedBy');
       // Adding first found geo object to the map.
       this.map.geoObjects.add(firstGeoObject);
@@ -70,15 +48,15 @@ export class AppComponent implements OnInit {
 
   onSearchChange(): void {
     this.yaApiLoaderService.load().subscribe(ymaps => {
-      const suggest = new (ymaps as any).SuggestView('suggest');
-      suggest.events.add(['click']);
-
-
-      // suggest.events.add(['select'], e => console.log(e));
-      // console.log(suggest);
+      const suggest = new (ymaps as any).SuggestView('suggest', {
+        results: 7,
+        boundedBy: [[38.464454, 68.671434], [38.708910, 68.889581]]
+      });
+      suggest.events.add(['select']);
+      // suggest.destroy();
+      // console.log(suggest.destroy());
     });
   }
-
 
   onYaActionEnd($event: YaEvent<ymaps.Map>): void {
     this.point = $event.event.originalEvent.target.getCenter();
@@ -88,9 +66,7 @@ export class AppComponent implements OnInit {
     });
   }
 
-  onMapReady($event: YaReadyEvent<ymaps.Map>): void {
-    this.map = $event.target;
-  }
+
 
   onDetectLocationClick(): void {
     ymaps.geolocation.get({
